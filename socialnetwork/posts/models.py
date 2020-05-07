@@ -3,6 +3,9 @@ from django.db import models
 
 
 class User(AbstractUser):
+    """
+    Represents user
+    """
     last_activity = models.DateTimeField(
         auto_now_add=True,
         verbose_name='Last activity',
@@ -12,6 +15,9 @@ class User(AbstractUser):
 
 
 class Post(models.Model):
+    """
+    Represents post
+    """
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
@@ -37,6 +43,9 @@ class Post(models.Model):
 
 
 class Like(models.Model):
+    """
+    Represents like
+    """
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,

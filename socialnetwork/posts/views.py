@@ -1,4 +1,5 @@
-from datetime import datetime
+from datetime import datetime, date
+from typing import Optional
 
 from django.db.models import Q, Count
 from django.utils.timezone import make_aware
@@ -17,15 +18,25 @@ from posts.serializers import (
 
 
 class IncorrectParametersException(APIException):
+    """
+    Represents an exception raised when incorrect params were passed to
+    analytics function
+    """
     status_code = 400
     default_detail = 'Incorrect parameters'
 
 
 class TokenAuthView(TokenObtainPairView):
+    """
+    Represents modified view for JWT
+    """
     serializer_class = TokenSerializer
 
 
-class PostCreateList(generics.ListCreateAPIView):
+class PostCreateListView(generics.ListCreateAPIView):
+    """
+    Represents list view for post creating and viewing
+    """
     queryset = Post.objects.all()
     serializer_class = PostSerializer
     permission_classes = [IsAuthenticated]
@@ -34,9 +45,13 @@ class PostCreateList(generics.ListCreateAPIView):
 class LikeCreateDestroyAPIView(mixins.CreateModelMixin,
                                mixins.DestroyModelMixin,
                                generics.GenericAPIView):
+    """
+    Represents view for like creating and destroying
+    """
     queryset = Like.objects.all()
     serializer_class = LikeSerializer
     permission_classes = [IsAuthenticated]
+    # like will be deleted from the specified post
     lookup_field = 'post'
 
     def post(self, request, *args, **kwargs):
@@ -46,16 +61,30 @@ class LikeCreateDestroyAPIView(mixins.CreateModelMixin,
         return self.destroy(request, *args, **kwargs)
 
     def get_queryset(self):
+        """
+        Makes queryset limited for current user
+        """
         queryset = self.queryset.filter(user=self.request.user)
         return queryset
 
 
 class LikesPerDayList(generics.ListAPIView):
+    """
+    Represents view for analytics gathering
+    """
     serializer_class = LikeAnalyticsSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        def get_date_param(key):
+        """
+        Gathers analytics about how many likes was made
+        """
+        def get_date_param(key: str) -> Optional[date]:
+            """
+            Gets parameter from query string and converts it to date
+            :param key: parameter name
+            :return: date
+            """
             value = self.request.query_params.get(key, None)
             if value:
                 try:
